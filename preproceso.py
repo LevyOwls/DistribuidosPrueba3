@@ -28,13 +28,31 @@ def transform (data,lista):
         if str(data) != 'normal':
             return -1
         return 1
-    
+
+##############################################################
+##############################################################
+
+def load_config():
+	config = np.genfromtxt("configuracion.csv", dtype=float, delimiter='\n') 
+	#VECTOR[ ]
+	nc=1
+	#Nodos ocultos
+	L=config[0]
+	#Particulas
+	particulas=config[1]
+	#Maximo de iteraciones
+	max_iteraciones=config[2]
+	#Penalidad P inversa
+	C=config[3]
+	return (nc,L,particulas,max_iteraciones,C)
+	
+
 ##############################################################
 ##############################################################
 
 #param: dato[][]
-def Normalize(datos):
-    data_normal = np.empty_like(datos)
+def Normalize_Xe(datos):
+    y = np.empty_like(datos)
     
     #x_min, x_max deben ser int, datos debe ser una matriz de int
     x_min = np.min(datos)
@@ -45,48 +63,59 @@ def Normalize(datos):
         for i in data:
             #aux=str(i);
             x = i.astype(float)
-            data_normal[contador] = (x-x_min)/(x_max-x_min)
+            y[contador] = (x-x_min)/(x_max-x_min)
+            #y=(0.99-0.1)*y+0.1
             contador+=1
     
    # normal =np.linalg.norm(data_normal)
    # print (normal)
-    print("\n estos deberian ser los datos normalizados", data_normal)
+    print("\n estos deberian ser los datos normalizados", y)
     
-    return data_normal
+    return y
+
+
 
 ##############################################################
-##############################################################
-  
+##############################################################  
 
-def preproceso():
-    path = 'KDDTrain+_20Percent.txt'
-    datos = np.loadtxt(path, delimiter=',',dtype='str')
-    
-   # print(datos)
+def to_readable(path,name):
+    datos = np.loadtxt(path, delimiter=',',dtype='str',usecols=(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40))
 
-    
     #Se transforma todo a numeros enteros.
     for data in datos:
         contador=0
-        
         for i in data:
-            
             if contador == 1:
                 data[contador]=transform(str(i),1)
             if contador == 2:
                 data[contador]=transform(str(i),2)
             if contador == 3:
                 data[contador]=transform(str(i),3)
-            if contador == 41:
-                data[contador]=transform(str(i),4)
-            #Actualiza el contador
             contador+=1
-    
-    
     datos = datos.astype(np.float)
-    datos=Normalize(datos)
-    print ("\nDatos ya procesados a numero  (float)")
-
+    datos=Normalize_Xe(datos)
     #Se escribe el archivo nuevo
-    np.savetxt('train.txt', datos, delimiter=',')
+    np.savetxt(name, datos, delimiter=',')
+    
+    Y=np.loadtxt(path, delimiter=',',dtype='str',usecols=41)
+    Yee=[]
+    for data in Y:
+        if data != 'normal':
+            Yee.append(-1)
+        else:
+            Yee.append(1)
+    Ye=np.array(Yee)
+    return Ye
+
+##############################################################
+############################################################## 
+
+def preproceso():
+    Ye=to_readable("KDDTrain+_20Percent.txt","train.txt")
+    Xe=np.loadtxt("train.txt", delimiter=',',dtype='float', usecols=(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40))
+    (nc,L,particulas,max_iteraciones,C)=load_config()
+    print (Ye)
+    print (Xe)
+    
+    
     
